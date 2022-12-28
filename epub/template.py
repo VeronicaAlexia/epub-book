@@ -31,6 +31,26 @@ def format_toc_ncx(book_id, book_name, book_author):
         replace('${book_title}', book_name).replace('${book_author}', book_author)
 
 
+def update_content_opf_manifest(update_content_opf, content_opf_manifest):
+    default_content_opf_manifest = """<item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml" />
+    <item href="Images/cover.jpg" id="cover.jpg" media-type="image/jpeg" />
+    <item href="Text/cover.xhtml" id="cover.xhtml" media-type="application/xhtml+xml" />\n"""
+    return update_content_opf.replace(
+        '<manifest></manifest>', f'<manifest>{default_content_opf_manifest + content_opf_manifest}</manifest>'
+    )
+
+
+def update_content_opf_spine(update_content_opf, content_opf_spine):
+    default_content_opf_spine = '<itemref idref="cover.xhtml" />\n'
+    return update_content_opf.replace('<spine toc="ncx"></spine>',
+                                      f'<spine toc="ncx">{default_content_opf_spine + content_opf_spine}</spine>')
+
+
+def update_nav_map(update_toc_ncx, nav_map):
+    default_nav_map = '<navPoint id="cover" playOrder="1"><navLabel><text>書籍封面</text></navLabel>' \
+                      '<content src="Text/cover.xhtml" /></navPoint>'
+    return update_toc_ncx.replace('<navMap></navMap>', f'<navMap>{default_nav_map + nav_map}</navMap>')
+
 container = """<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
     <rootfiles>
@@ -51,14 +71,8 @@ content_opf = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <dc:publisher>hbooker.com</dc:publisher>
 <meta name="cover" content="cover.jpg"/>
 </metadata>
-<manifest>
-<item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml" />
-<item href="Images/cover.jpg" id="cover.jpg" media-type="image/jpeg" />
-<item href="Text/cover.xhtml" id="cover.xhtml" media-type="application/xhtml+xml" /> 
-</manifest>
-<spine toc="ncx">
-<itemref idref="cover.xhtml" /> 
-</spine>
+<manifest></manifest>
+<spine toc="ncx"></spine>
 <guide>
 <reference href="Text/cover.xhtml" title="书籍封面" type="cover" />
 </guide>
@@ -81,9 +95,7 @@ toc_ncx = """<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <docAuthor>
 <text>${book_author}</text>
 </docAuthor>
-<navMap>
-<navPoint id="cover" playOrder="1"><navLabel><text>書籍封面</text></navLabel><content src="Text/cover.xhtml" /></navPoint>
-</navMap>
+<navMap></navMap>
 </ncx>  
 """
 
