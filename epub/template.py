@@ -6,6 +6,12 @@ def format_image_format_manifest(filename: str, media_type: str):
     return f'<item href="Images/{filename}" id="{filename}" media-type="{media_type}" />\r\n'
 
 
+def format_chapter(chapter_index, chapter_title, chapter_content):
+    return chapter_xhtml.replace('<title>${chapter_title}</title>',
+                                 f'<title>第{chapter_index}章: {chapter_title} </title>') \
+        .replace('${chapter_content}', f'<h3>{chapter_title}</h3>\r\n' + chapter_content)
+
+
 def format_spine(chapter_id):
     return f'<itemref idref="{chapter_id}.xhtml" />\r\n'
 

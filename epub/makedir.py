@@ -9,6 +9,7 @@ def join_path(*args):
 def set_epub_cache_file(epub_dir: str):
     if not os.path.isdir(epub_dir):
         os.makedirs(epub_dir)
+
     with open(join_path(epub_dir, 'mimetype'), 'w') as f:
         f.write(mimetype)
 

@@ -64,3 +64,14 @@ def make_in_cover_template(config_dir: str, epub_dir: str, display_information: 
                  cover_xhtml.replace("\r", "").replace("\n", "")))
     cover = str(write(config_dir + '/OEBPS/Text/cover.xhtml', 'r').read())
     write(epub_dir.replace(".epub", ".txt"), 'w', replace_cover(str_mid(cover, '<h1>', '</body>')))
+
+
+def write(path: str, mode: str, info=None):
+    if info is None:
+        try:
+            return open(path, f'{mode}', encoding='UTF-8')
+        except (UnicodeEncodeError, UnicodeDecodeError) as error:
+            print("error: ", error)
+            return open(path, f'{mode}', encoding='gbk')
+    with open(path, f'{mode}', encoding='UTF-8', newline='') as file:
+        file.writelines(info)

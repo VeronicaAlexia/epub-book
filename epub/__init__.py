@@ -1,5 +1,6 @@
 import zipfile
 import codecs
+from shutil import copyfile
 from .template import *
 from .tools import *
 from .makedir import set_epub_cache_file
@@ -10,14 +11,30 @@ class EpubFile:
     def __init__(self, config_dir: str, epub_dir: str):
         self.config_dir = config_dir
         self.epub_dir = epub_dir
+        self._toc_ncx = None
+        self._content_opf = None
+        self._content_opf_manifest = None
+        self._content_opf_spine = None
+        self._toc_ncx_navMap = None
+
+    def set_epub_cache_file(self):
         set_epub_cache_file(self.config_dir)
-        self._chapter_format = chapter_xhtml
-        self._content_opf = format_content_opf(Vars.book_info.book_id, Vars.book_info.book_name,
-                                               Vars.book_info.author_name)
-        self._toc_ncx = format_toc_ncx(Vars.book_info.book_id, Vars.book_info.book_name, Vars.book_info.author_name)
+
+    def set_book_info(self, book_id, book_name, author_name):
+        self._content_opf = format_content_opf(book_id, book_name, author_name)
+        self._toc_ncx = format_toc_ncx(book_id, book_name, author_name)
         self._content_opf_manifest = str_mid(self._content_opf, '<manifest>', '</manifest>')
         self._content_opf_spine = str_mid(self._content_opf, '<spine toc="ncx">', '</spine>')
         self._toc_ncx_navMap = str_mid(self._toc_ncx, '<navMap>', '</navMap>')
+
+    def set_cover(self, cover_url: str):
+        image_path = self.config_dir + '/OEBPS/Images/' + cover_url[cover_url.rfind('/') + 1:]
+        if not os.path.exists(image_path) or os.path.getsize(image_path) == 0:
+            try:
+                urllib.request.urlretrieve(cover_url, image_path)
+                copyfile(image_path, self.config_dir + '/OEBPS/Images/cover.jpg')
+            except Exception as e:
+                print("Error set_cover: ", e)
 
     def _add_manifest_chapter(self, chapter_id: str):
         if self._content_opf_manifest.find('id="' + chapter_id + '.xhtml"') == -1:
@@ -58,12 +75,12 @@ class EpubFile:
             for _name in _result:
                 _file.write(_name, _name.replace(self.config_dir + '/', ''))
 
-    def add_chapter(self, chapter_info: ciweimao.ContentInfo, content_text: str):
-        chapter_data = self._chapter_format.replace(
-            '<title>${chapter_title}</title>',
-            f'<title>第{chapter_info.chapter_index}章: {chapter_info.chapter_title} </title>') \
-            .replace('${chapter_content}', f'<h3>{chapter_info.chapter_title}</h3>\r\n' + content_text)
-        write(chapter_info.text_content_path, 'w', get_chapter_image(self.config_dir, chapter_data))
+    def add_chapter(self, chapter_index, chapter_title, text_content_path, content_text: str):
+        try:
+            chapter_data = format_chapter(chapter_index, chapter_title, content_text)
+            write(text_content_path, 'w', get_chapter_image(self.config_dir, chapter_data))
+        except Exception as e:
+            print("Error add_chapter: ", e)
 
     def download_book_write_chapter(self):
         file_name_list = os.listdir(os.path.join(self.config_dir, 'OEBPS', 'Text'))
