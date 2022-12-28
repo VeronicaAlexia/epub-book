@@ -8,16 +8,14 @@ from .makedir import set_epub_cache_file
 class EpubFile:
 
     def __init__(self):
-        set_epub_cache_file()
+        set_epub_cache_file(Vars.config_dir)
         self._chapter_format = chapter_xhtml
-        self._toc_ncx = toc_ncx
-        self._content_opf_manifest = str_mid(self._content_opf, '<manifest>', '</manifest>')
-        self._content_opf_spine = str_mid(self._content_opf, '<spine toc="ncx">', '</spine>')
-        self._toc_ncx_navMap = str_mid(self._toc_ncx, '<navMap>', '</navMap>')
-
         self._content_opf = format_content_opf(Vars.book_info.book_id, Vars.book_info.book_name,
                                                Vars.book_info.author_name)
         self._toc_ncx = format_toc_ncx(Vars.book_info.book_id, Vars.book_info.book_name, Vars.book_info.author_name)
+        self._content_opf_manifest = str_mid(self._content_opf, '<manifest>', '</manifest>')
+        self._content_opf_spine = str_mid(self._content_opf, '<spine toc="ncx">', '</spine>')
+        self._toc_ncx_navMap = str_mid(self._toc_ncx, '<navMap>', '</navMap>')
 
     def _add_manifest_chapter(self, chapter_id: str):
         if self._content_opf_manifest.find('id="' + chapter_id + '.xhtml"') == -1:
