@@ -8,6 +8,8 @@ def join_path(*args):
 
 
 def set_epub_cache_file():
+    if not os.path.isdir(Vars.config_dir):
+        os.makedirs(Vars.config_dir)
     for _name in os.listdir(join_path("HbookerAPI", 'template')):
         if not os.path.isfile(join_path("HbookerAPI", 'template', _name)):
             if not os.path.exists(Vars.config_dir + '/' + _name):

@@ -1,5 +1,31 @@
-container = """
-<?xml version="1.0" encoding="UTF-8"?>
+def format_manifest(chapter_id):
+    return f'<item href="Text/{chapter_id}.xhtml" id="{chapter_id}.xhtml" media-type="application/xhtml+xml" />\r\n'
+
+
+def format_image_format_manifest(filename: str, media_type: str):
+    return f'<item href="Images/{filename}" id="{filename}" media-type="{media_type}" />\r\n'
+
+
+def format_spine(chapter_id):
+    return f'<itemref idref="{chapter_id}.xhtml" />\r\n'
+
+
+def format_nav_map(chapter_id, chapter_index, chapter_title):
+    return f'<navPoint id="{chapter_id}" playOrder="{chapter_index}"><navLabel><text>{chapter_title}</text>' \
+           f'</navLabel><content src="Text/{chapter_id}.xhtml" /></navPoint>\r\n'
+
+
+def format_content_opf(book_id, book_name, book_author):
+    return content_opf.replace('${book_id}', book_id). \
+        replace('${book_title}', book_name).replace('${book_author}', book_author)
+
+
+def format_toc_ncx(book_id, book_name, book_author):
+    return toc_ncx.replace('${book_id}', book_id). \
+        replace('${book_title}', book_name).replace('${book_author}', book_author)
+
+
+container = """<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
     <rootfiles>
         <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
@@ -9,8 +35,7 @@ container = """
 
 mimetype = "application/epub+zip"
 
-content_opf = """
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+content_opf = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" version="2.0">
 <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
 <dc:identifier id="BookId">hbooker:${book_id}</dc:identifier>
@@ -23,13 +48,10 @@ content_opf = """
 <manifest>
 <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml" />
 <item href="Images/cover.jpg" id="cover.jpg" media-type="image/jpeg" />
-<item href="Text/cover.xhtml" id="cover.xhtml" media-type="application/xhtml+xml" />
-${chapter_format_manifest}={{{<item href="Text/${chapter_id}.xhtml" id="${chapter_id}.xhtml" media-type="application/xhtml+xml" />}}}
-${image_format_manifest}={{{<item href="Images/${filename}" id="${filename}" media-type="${media_type}" />}}}
+<item href="Text/cover.xhtml" id="cover.xhtml" media-type="application/xhtml+xml" /> 
 </manifest>
 <spine toc="ncx">
-<itemref idref="cover.xhtml" />
-${chapter_format_spine}={{{<itemref idref="${chapter_id}.xhtml" />}}}
+<itemref idref="cover.xhtml" /> 
 </spine>
 <guide>
 <reference href="Text/cover.xhtml" title="书籍封面" type="cover" />
@@ -37,8 +59,7 @@ ${chapter_format_spine}={{{<itemref idref="${chapter_id}.xhtml" />}}}
 </package> 
 """
 
-toc_ncx = """
-<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+toc_ncx = """<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN"
  "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
@@ -56,13 +77,11 @@ toc_ncx = """
 </docAuthor>
 <navMap>
 <navPoint id="cover" playOrder="1"><navLabel><text>書籍封面</text></navLabel><content src="Text/cover.xhtml" /></navPoint>
-${chapter_format_navMap}={{{<navPoint id="${chapter_id}" playOrder="${chapter_index}"><navLabel><text>${chapter_title}</text></navLabel><content src="Text/${chapter_id}.xhtml" /></navPoint>}}}
 </navMap>
 </ncx>  
 """
 
-cover_xhtml = """
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
+cover_xhtml = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ch">
@@ -79,8 +98,7 @@ cover_xhtml = """
 </html> 
 """
 
-chapter_xhtml = """
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
+chapter_xhtml = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
