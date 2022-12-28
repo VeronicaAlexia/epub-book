@@ -7,8 +7,10 @@ from .makedir import set_epub_cache_file
 
 class EpubFile:
 
-    def __init__(self):
-        set_epub_cache_file(Vars.config_dir)
+    def __init__(self, config_dir: str, epub_dir: str):
+        self.config_dir = config_dir
+        self.epub_dir = epub_dir
+        set_epub_cache_file(self.config_dir)
         self._chapter_format = chapter_xhtml
         self._content_opf = format_content_opf(Vars.book_info.book_id, Vars.book_info.book_name,
                                                Vars.book_info.author_name)
@@ -48,23 +50,23 @@ class EpubFile:
                 f'<navMap>{_before}</navMap>', f'<navMap>{self._toc_ncx_navMap}</navMap>', 1)
 
     def export(self):
-        write(os.path.join(Vars.config_dir, 'OEBPS', 'content.opf'), 'w', self._content_opf)
-        with codecs.open(Vars.config_dir + '/OEBPS/toc.ncx', 'w', 'utf-8') as _file:
+        write(os.path.join(self.config_dir, 'OEBPS', 'content.opf'), 'w', self._content_opf)
+        with codecs.open(self.config_dir + '/OEBPS/toc.ncx', 'w', 'utf-8') as _file:
             _file.write(self._toc_ncx)
-        with zipfile.ZipFile(Vars.epub_dir, 'w', zipfile.ZIP_DEFLATED) as _file:
-            _result = get_all_files(Vars.config_dir)
+        with zipfile.ZipFile(self.epub_dir, 'w', zipfile.ZIP_DEFLATED) as _file:
+            _result = get_all_files(self.config_dir)
             for _name in _result:
-                _file.write(_name, _name.replace(Vars.config_dir + '/', ''))
+                _file.write(_name, _name.replace(self.config_dir + '/', ''))
 
     def add_chapter(self, chapter_info: ciweimao.ContentInfo, content_text: str):
         chapter_data = self._chapter_format.replace(
             '<title>${chapter_title}</title>',
             f'<title>第{chapter_info.chapter_index}章: {chapter_info.chapter_title} </title>') \
             .replace('${chapter_content}', f'<h3>{chapter_info.chapter_title}</h3>\r\n' + content_text)
-        write(chapter_info.text_content_path, 'w', get_chapter_image(chapter_data))
+        write(chapter_info.text_content_path, 'w', get_chapter_image(self.config_dir, chapter_data))
 
     def download_book_write_chapter(self):
-        file_name_list = os.listdir(os.path.join(Vars.config_dir, 'OEBPS', 'Text'))
+        file_name_list = os.listdir(os.path.join(self.config_dir, 'OEBPS', 'Text'))
         for order_count, filename in enumerate(sorted(file_name_list), start=2):
             if filename.find('$') > -1 or filename == 'cover.xhtml':
                 continue
@@ -73,7 +75,7 @@ class EpubFile:
             f_name = os.path.splitext(filename)[0]
             self._add_manifest_chapter(f_name)
             self._add_spine(f_name)
-            _data_chapter = re.sub(r'<h3>.*?</h3>', '', write(Vars.config_dir + '/OEBPS/Text/' + filename, 'r').read())
+            _data_chapter = re.sub(r'<h3>.*?</h3>', '', write(self.config_dir + '/OEBPS/Text/' + filename, 'r').read())
             division_and_chapter_file = str_mid(_data_chapter, "<title>", "</title>")
             self.add_nav_map(str(order_count), f_name, division_and_chapter_file)
 
@@ -85,8 +87,8 @@ class EpubFile:
             #                                           + str_mid(_img, '<img src="', '"').replace('../', '') + '"')
 
             _data_chapter = re.sub(r'</?[\S\s]*?>', '', _data_chapter)
-            write(os.path.splitext(Vars.epub_dir)[0] + ".txt", 'a', re.sub(r'[\r\n]+', '\r\n', _data_chapter))
+            write(os.path.splitext(self.epub_dir)[0] + ".txt", 'a', re.sub(r'[\r\n]+', '\r\n', _data_chapter))
             order_count += 1
-        for filename in sorted(os.listdir(Vars.config_dir + '/OEBPS/Images/')):
+        for filename in sorted(os.listdir(self.config_dir + '/OEBPS/Images/')):
             self._add_manifest_image(filename)
         self.export()
